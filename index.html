@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prospector Films</title>
+<style>
+* { box-sizing: border-box; }
+body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; color: #1a1a1a; }
+.container { padding: 2rem 1.5rem; max-width: 900px; margin: 0 auto; background: white; min-height: 100vh; }
+h1 { margin: 0 0 .3rem; font-size: 26px; font-weight: 500; }
+.sub { margin: 0 0 1.5rem; font-size: 14px; color: #666; }
+.tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 1.5rem; border-bottom: 1px solid #ddd; }
+.tabs button { padding: 8px 14px; background: none; border: none; border-bottom: 2px solid transparent; color: #666; cursor: pointer; font-size: 14px; }
+.tabs button.active { color: #185fa5; border-bottom-color: #185fa5; }
+.tab { display: none; }
+.tab.active { display: block; }
+h2 { font-size: 18px; font-weight: 500; margin: 0 0 1rem; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 1rem; }
+label { display: block; font-size: 12px; color: #666; margin-bottom: 4px; }
+input, select, textarea { width: 100%; padding: 8px 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; font-family: inherit; }
+textarea { min-height: 70px; }
+button.btn { padding: 9px 14px; border: 1px solid #ccc; border-radius: 6px; background: white; cursor: pointer; font-size: 13px; }
+button.btn:hover { background: #f5f5f5; }
+button.primary { background: #185fa5; color: white; border-color: #185fa5; }
+.card { border: 1px solid #ddd; border-radius: 10px; padding: 1rem 1.2rem; margin-bottom: 1rem; }
+.card h3 { margin: 0; font-size: 16px; font-weight: 500; }
+.meta { font-size: 12px; color: #888; margin: 3px 0 10px; }
+.badge { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 10px; background: #eef; color: #335; margin-left: 6px; }
+.box { background: #f7f7f7; border-left: 3px solid #185fa5; padding: 10px 12px; font-size: 13px; line-height: 1.6; margin-bottom: 10px; }
+.hook { background: #e6f1fb; color: #0c447c; padding: 8px 10px; border-radius: 6px; font-size: 13px; margin-bottom: 6px; }
+.warn { background: #faeeda; color: #633806; padding: 10px 12px; border-radius: 6px; font-size: 13px; margin-bottom: 1rem; }
+.script { background: #f7f7f7; padding: 12px; border-radius: 6px; font-size: 13px; line-height: 1.7; white-space: pre-wrap; }
+.step { padding-left: 1.2rem; border-left: 2px solid #185fa5; margin-bottom: 1rem; }
+.step b { display: block; font-size: 14px; font-weight: 500; }
+.step span { font-size: 13px; color: #555; }
+.msg { color: #2a7a2a; font-size: 13px; margin-left: 10px; }
+.row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+</style>
+</head>
+<body>
+<div class="container">
+<h1>Prospector Films</h1>
+<p class="sub">Films solaires, vinyles, PPF — Bruxelles, Brabant wallon, Hainaut</p>
+
+<div class="tabs">
+  <button data-tab="prospects" class="active">Prospects</button>
+  <button data-tab="ajout">Ajouter</button>
+  <button data-tab="calendrier">Relances</button>
+  <button data-tab="scripts">Scripts</button>
+  <button data-tab="conseils">Conseils</button>
+  <button data-tab="config">Configuration</button>
+</div>
+
+<div id="prospects" class="tab active">
+  <h2>Mes prospects</h2>
+  <div class="warn">Les fiches marquées « exemple » sont fictives. Supprime-les et ajoute de vrais établissements dans l'onglet « Ajouter ».</div>
+  <div class="row" style="margin-bottom:1rem">
+    <select id="filtre" style="max-width:220px">
+      <option value="tous">Tous les statuts</option>
+      <option value="à contacter">À contacter</option>
+      <option value="contacté">Contacté</option>
+      <option value="rdv">RDV fixé</option>
+      <option value="client">Client</option>
+      <option value="pas intéressé">Pas intéressé</option>
+    </select>
+  </div>
+  <div id="liste"></div>
+</div>
+
+<div id="ajout" class="tab">
+  <h2>Ajouter un prospect</h2>
+  <div class="grid">
+    <div><label>Nom du contact</label><input id="f-nom" placeholder="Marie Lambert"></div>
+    <div><label>Établissement</label><input id="f-etab" placeholder="Brasserie du Centre"></div>
+    <div><label>Localité</label><input id="f-ville" placeholder="Nivelles"></div>
+    <div><label>Secteur</label>
+      <select id="f-secteur"><option>Horeca</option><option>Particulier</option><option>Entreprise</option><option>Autre</option></select></div>
+    <div><label>Téléphone</label><input id="f-tel"></div>
+    <div><label>Email</label><input id="f-mail"></div>
+  </div>
+  <label>Besoin observé (ce que tu as vu)</label>
+  <textarea id="f-besoin" placeholder="Grande vitrine plein sud, stores baissés toute la journée"></textarea>
+  <label style="margin-top:10px">Notes</label>
+  <textarea id="f-notes"></textarea>
+  <p id="f-err" style="color:#a32d2d;font-size:13px"></p>
+  <button class="btn primary" onclick="ajouter()">Ajouter le prospect</button><span class="msg" id="f-msg"></span>
+</div>
+
+<div id="calendrier" class="tab">
+  <h2>Séquence de relances (par prospect)</h2>
+  <div class="step"><b>Jour 1 — appel (vers 10h pour l'Horeca)</b><span>But : obtenir un rendez-vous de diagnostic. Ne pas vendre au téléphone.</span></div>
+  <div class="step"><b>Jour 1 — email si pas joint</b><span>Court, personnel, qui reprend le besoin observé.</span></div>
+  <div class="step"><b>Jour 2 — LinkedIn ou Facebook</b><span>Si tu trouves le profil : message bref, mentionne l'établissement.</span></div>
+  <div class="step"><b>Jour 3-4 — passage sur place</b><span>Hors service. Carte de visite, une phrase, tu repars.</span></div>
+  <div class="step"><b>Jour 8 — rappel téléphonique</b><span>« On s'était parlé la semaine passée, vous avez eu le temps d'y penser ? »</span></div>
+  <div class="step"><b>Jour 9 — email de suivi</b><span>Doux, sans pression.</span></div>
+  <div class="step"><b>Jour 12 — dernière tentative</b><span>Puis suivi passif : tu reviens dans un mois, ou à la saison suivante.</span></div>
+</div>
+
+<div id="scripts" class="tab">
+  <h2>Script d'appel — Horeca</h2>
+  <div class="script">Ouverture :
+« Bonjour [prénom], [ton nom]. Je pose des films solaires pour vitrines et terrasses dans la région. Vous avez deux minutes ? »
+
+Si oui :
+« Votre salle côté vitrine, l'été, ça devient vite chaud ? »
+
+→ Écouter. Le laisser parler.
+
+« Vous avez déjà essayé quelque chose ? »
+
+→ Écouter.
+
+« Je peux passer un quart d'heure pour regarder vos vitrages et vous dire ce qui est faisable. C'est gratuit et sans engagement. Plutôt mardi ou jeudi ? »
+
+Fermeture :
+Confirmer jour, heure, adresse. Remercier.</div>
+  <h2 style="margin-top:1.5rem">Script d'appel — particulier</h2>
+  <div class="script">« Bonjour, [ton nom]. Je pose des films pour vitrages : chaleur, vis-à-vis, protection UV. Vous m'avez été recommandé / j'ai vu votre demande. Qu'est-ce qui vous gêne le plus, chez vous ? »
+
+→ Écouter, reformuler le problème.
+
+« Le plus simple, c'est que je passe voir les fenêtres concernées. Ça prend 20 minutes et je vous donne un prix au m² sur place. »</div>
+</div>
+
+<div id="conseils" class="tab">
+  <h2>Conseils généraux</h2>
+  <div class="box"><b>La première phrase décide de tout.</b> Parle du problème observé chez lui, pas de toi.</div>
+  <div class="box"><b>Insister, pas harceler.</b> Plusieurs canaux, espacés. Maximum 7 contacts sur 12 jours, puis pause.</div>
+  <div class="box"><b>Ne vends pas au téléphone.</b> Le seul objectif de l'appel : le rendez-vous.</div>
+  <div class="box"><b>Horaires Horeca.</b> Appeler vers 10h ou 15h-16h. Jamais pendant le service.</div>
+  <div class="box"><b>Les preuves vendent.</b> Photos avant/après de tes premiers chantiers, même chez toi ou chez des proches.</div>
+  <div class="box"><b>Pas de chiffres non vérifiés.</b> N'annonce un % d'économie que s'il vient de la fiche technique du film que tu poses.</div>
+</div>
+
+<div id="config" class="tab">
+  <h2>Ma configuration</h2>
+  <p style="font-size:13px;color:#666">Ces infos restent dans ce navigateur, sur cet ordinateur. Rien n'est publié.</p>
+  <div class="grid">
+    <div><label>Ton nom</label><input id="c-nom"></div>
+    <div><label>Film utilisé</label><input id="c-film"></div>
+    <div><label>Prix au m² (indicatif)</label><input id="c-prix"></div>
+    <div><label>Délai de pose</label><input id="c-delai"></div>
+    <div><label>Durée de vie du film</label><input id="c-duree"></div>
+    <div><label>Rejet de chaleur (fiche technique)</label><input id="c-perf"></div>
+  </div>
+  <button class="btn primary" onclick="sauverConfig()">Enregistrer</button><span class="msg" id="c-msg"></span>
+  <h2 style="margin-top:2rem">Sauvegarde</h2>
+  <p style="font-size:13px;color:#666">Tes prospects sont stockés dans ce navigateur. Exporte-les de temps en temps.</p>
+  <div class="row">
+    <button class="btn" onclick="exporter()">Exporter mes prospects</button>
+    <label class="btn" style="margin:0;cursor:pointer">Importer<input type="file" id="imp" accept=".json" style="display:none"></label>
+  </div>
+</div>
+</div>
+
+<script>
+const STATUTS = ["à contacter","contacté","rdv","client","pas intéressé"];
+const EXEMPLES = [
+  {id:1, exemple:true, nom:"(exemple)", etab:"Brasserie fictive", ville:"Wavre", secteur:"Horeca", tel:"", mail:"", besoin:"Grande vitrine plein sud, salle chaude l'après-midi en été.", notes:"", statut:"à contacter"},
+  {id:2, exemple:true, nom:"(exemple)", etab:"Particulier fictif", ville:"Nivelles", secteur:"Particulier", tel:"", mail:"", besoin:"Baie vitrée avec vis-à-vis sur la rue.", notes:"", statut:"à contacter"}
+];
+
+function lire(cle, defaut) { try { const v = localStorage.getItem(cle); return v ? JSON.parse(v) : defaut; } catch(e) { return defaut; } }
+function ecrire(cle, val) { try { localStorage.setItem(cle, JSON.stringify(val)); } catch(e) {} }
+
+let prospects = lire("pf_prospects", EXEMPLES);
+let config = lire("pf_config", {});
+
+document.querySelectorAll(".tabs button").forEach(b => b.addEventListener("click", () => {
+  document.querySelectorAll(".tabs button").forEach(x => x.classList.remove("active"));
+  document.querySelectorAll(".tab").forEach(x => x.classList.remove("active"));
+  b.classList.add("active");
+  document.getElementById(b.dataset.tab).classList.add("active");
+}));
+
+function esc(s) { return String(s || "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+
+function accroches(p) {
+  const lieu = p.etab || "votre établissement";
+  return [
+    "Observation : « En passant devant " + lieu + ", j'ai remarqué " + (p.besoin ? p.besoin.charAt(0).toLowerCase() + p.besoin.slice(1).replace(/\.$/, "") : "vos grandes surfaces vitrées") + ". »",
+    "Opportunité : « On peut réduire nettement la chaleur derrière une vitre sans perdre la vue ni la lumière. »",
+    "Question : « L'été, la chaleur derrière vos vitres, c'est un vrai souci ou ça va ? »"
+  ];
+}
+
+function afficher() {
+  const f = document.getElementById("filtre").value;
+  const liste = document.getElementById("liste");
+  const items = prospects.filter(p => f === "tous" || p.statut === f);
+  if (!items.length) { liste.innerHTML = '<p style="color:#888">Aucun prospect pour ce filtre.</p>'; return; }
+  liste.innerHTML = items.map(p => `
+    <div class="card">
+      <h3>${esc(p.etab)} ${p.exemple ? '<span class="badge">exemple</span>' : ''}</h3>
+      <div class="meta">${esc(p.nom)} · ${esc(p.ville)} · ${esc(p.secteur)}${p.tel ? " · " + esc(p.tel) : ""}${p.mail ? " · " + esc(p.mail) : ""}</div>
+      ${p.besoin ? `<div class="box"><b>Besoin observé :</b> ${esc(p.besoin)}</div>` : ""}
+      ${accroches(p).map(a => `<div class="hook">${esc(a)}</div>`).join("")}
+      ${p.notes ? `<div class="box"><b>Notes :</b> ${esc(p.notes)}</div>` : ""}
+      <div class="row">
+        <select onchange="changerStatut(${p.id}, this.value)" style="max-width:180px">
+          ${STATUTS.map(s => `<option ${s === p.statut ? "selected" : ""}>${s}</option>`).join("")}
+        </select>
+        <button class="btn" onclick="noter(${p.id})">Ajouter une note</button>
+        <button class="btn" onclick="supprimer(${p.id})">Supprimer</button>
+      </div>
+    </div>`).join("");
+}
+
+function changerStatut(id, s) { const p = prospects.find(x => x.id === id); p.statut = s; ecrire("pf_prospects", prospects); afficher(); }
+function noter(id) {
+  const p = prospects.find(x => x.id === id);
+  const n = prompt("Note (date, ce qui s'est dit) :");
+  if (n) { const d = new Date().toLocaleDateString("fr-BE"); p.notes = (p.notes ? p.notes + " | " : "") + d + " : " + n; ecrire("pf_prospects", prospects); afficher(); }
+}
+function supprimer(id) { if (confirm("Supprimer ce prospect ?")) { prospects = prospects.filter(x => x.id !== id); ecrire("pf_prospects", prospects); afficher(); } }
+
+function ajouter() {
+  const v = id => document.getElementById(id).value.trim();
+  if (!v("f-etab")) { document.getElementById("f-err").textContent = "Indique au moins le nom de l'établissement."; return; }
+  document.getElementById("f-err").textContent = "";
+  prospects.push({ id: Date.now(), nom: v("f-nom"), etab: v("f-etab"), ville: v("f-ville"), secteur: v("f-secteur"), tel: v("f-tel"), mail: v("f-mail"), besoin: v("f-besoin"), notes: v("f-notes"), statut: "à contacter" });
+  ecrire("pf_prospects", prospects);
+  ["f-nom","f-etab","f-ville","f-tel","f-mail","f-besoin","f-notes"].forEach(i => document.getElementById(i).value = "");
+  document.getElementById("f-msg").textContent = "Prospect ajouté";
+  setTimeout(() => document.getElementById("f-msg").textContent = "", 2500);
+  afficher();
+}
+
+function sauverConfig() {
+  ["nom","film","prix","delai","duree","perf"].forEach(k => config[k] = document.getElementById("c-" + k).value);
+  ecrire("pf_config", config);
+  document.getElementById("c-msg").textContent = "Enregistré";
+  setTimeout(() => document.getElementById("c-msg").textContent = "", 2500);
+}
+
+function exporter() {
+  const blob = new Blob([JSON.stringify({prospects, config}, null, 2)], {type: "application/json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "prospector-films-sauvegarde.json";
+  a.click();
+}
+
+document.getElementById("imp").addEventListener("change", e => {
+  const file = e.target.files[0]; if (!file) return;
+  const r = new FileReader();
+  r.onload = () => { try { const d = JSON.parse(r.result); if (d.prospects) prospects = d.prospects; if (d.config) config = d.config; ecrire("pf_prospects", prospects); ecrire("pf_config", config); chargerConfig(); afficher(); alert("Import terminé"); } catch(err) { alert("Fichier illisible"); } };
+  r.readAsText(file);
+});
+
+function chargerConfig() { ["nom","film","prix","delai","duree","perf"].forEach(k => document.getElementById("c-" + k).value = config[k] || ""); }
+
+document.getElementById("filtre").addEventListener("change", afficher);
+chargerConfig();
+afficher();
+</script>
+</body>
+</html>
