@@ -20,13 +20,15 @@ h2 { font-size: 18px; font-weight: 500; margin: 0 0 1rem; }
 label { display: block; font-size: 12px; color: #666; margin-bottom: 4px; }
 input, select, textarea { width: 100%; padding: 8px 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; font-family: inherit; }
 textarea { min-height: 70px; }
-button.btn { padding: 9px 14px; border: 1px solid #ccc; border-radius: 6px; background: white; cursor: pointer; font-size: 13px; }
+button.btn { padding: 8px 12px; border: 1px solid #ccc; border-radius: 6px; background: white; cursor: pointer; font-size: 13px; }
 button.btn:hover { background: #f5f5f5; }
 button.primary { background: #185fa5; color: white; border-color: #185fa5; }
 .card { border: 1px solid #ddd; border-radius: 10px; padding: 1rem 1.2rem; margin-bottom: 1rem; }
 .card h3 { margin: 0; font-size: 16px; font-weight: 500; }
 .meta { font-size: 12px; color: #888; margin: 3px 0 10px; }
-.badge { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 10px; background: #eef; color: #335; margin-left: 6px; }
+.badge { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 10px; background: #eef; color: #335; margin-left: 6px; font-weight: 400; }
+.badge.late { background: #fcebeb; color: #791f1f; }
+.badge.today { background: #eaf3de; color: #27500a; }
 .box { background: #f7f7f7; border-left: 3px solid #185fa5; padding: 10px 12px; font-size: 13px; line-height: 1.6; margin-bottom: 10px; }
 .hook { background: #e6f1fb; color: #0c447c; padding: 8px 10px; border-radius: 6px; font-size: 13px; margin-bottom: 6px; }
 .warn { background: #faeeda; color: #633806; padding: 10px 12px; border-radius: 6px; font-size: 13px; margin-bottom: 1rem; }
@@ -35,7 +37,19 @@ button.primary { background: #185fa5; color: white; border-color: #185fa5; }
 .step b { display: block; font-size: 14px; font-weight: 500; }
 .step span { font-size: 13px; color: #555; }
 .msg { color: #2a7a2a; font-size: 13px; margin-left: 10px; }
-.row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+.row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 8px; }
+.today-panel { border: 1px solid #c0dd97; background: #f6fbef; border-radius: 10px; padding: 1rem 1.2rem; margin-bottom: 1.5rem; }
+.today-panel h2 { margin-bottom: .6rem; }
+.today-item { display: flex; justify-content: space-between; gap: 10px; padding: 8px 0; border-top: 1px solid #dcebc7; font-size: 14px; cursor: pointer; }
+.today-item:first-of-type { border-top: none; }
+.today-item:hover { color: #185fa5; }
+.today-item small { color: #666; }
+.next { font-size: 13px; background: #f6fbef; border: 1px solid #dcebc7; border-radius: 6px; padding: 8px 10px; margin: 10px 0; }
+.histo { font-size: 12px; color: #555; margin: 8px 0 0; padding-left: 0; list-style: none; }
+.histo li { padding: 3px 0; border-top: 1px dashed #e5e5e5; }
+.canaux button { font-size: 13px; }
+.date-in { max-width: 170px; padding: 6px 8px; font-size: 13px; }
+.highlight { box-shadow: 0 0 0 3px #85b7eb; }
 </style>
 </head>
 <body>
@@ -53,6 +67,11 @@ button.primary { background: #185fa5; color: white; border-color: #185fa5; }
 </div>
 
 <div id="prospects" class="tab active">
+  <div class="today-panel">
+    <h2>À faire aujourd'hui</h2>
+    <div id="today"></div>
+  </div>
+
   <h2>Mes prospects</h2>
   <div class="warn">Les fiches marquées « exemple » sont fictives. Supprime-les et ajoute de vrais établissements dans l'onglet « Ajouter ».</div>
   <div class="row" style="margin-bottom:1rem">
@@ -85,17 +104,19 @@ button.primary { background: #185fa5; color: white; border-color: #185fa5; }
   <textarea id="f-notes"></textarea>
   <p id="f-err" style="color:#a32d2d;font-size:13px"></p>
   <button class="btn primary" onclick="ajouter()">Ajouter le prospect</button><span class="msg" id="f-msg"></span>
+  <p style="font-size:12px;color:#888">Un nouveau prospect apparaît directement dans « À faire aujourd'hui ».</p>
 </div>
 
 <div id="calendrier" class="tab">
   <h2>Séquence de relances (par prospect)</h2>
-  <div class="step"><b>Jour 1 — appel (vers 10h pour l'Horeca)</b><span>But : obtenir un rendez-vous de diagnostic. Ne pas vendre au téléphone.</span></div>
-  <div class="step"><b>Jour 1 — email si pas joint</b><span>Court, personnel, qui reprend le besoin observé.</span></div>
-  <div class="step"><b>Jour 2 — LinkedIn ou Facebook</b><span>Si tu trouves le profil : message bref, mentionne l'établissement.</span></div>
-  <div class="step"><b>Jour 3-4 — passage sur place</b><span>Hors service. Carte de visite, une phrase, tu repars.</span></div>
-  <div class="step"><b>Jour 8 — rappel téléphonique</b><span>« On s'était parlé la semaine passée, vous avez eu le temps d'y penser ? »</span></div>
-  <div class="step"><b>Jour 9 — email de suivi</b><span>Doux, sans pression.</span></div>
-  <div class="step"><b>Jour 12 — dernière tentative</b><span>Puis suivi passif : tu reviens dans un mois, ou à la saison suivante.</span></div>
+  <p style="font-size:13px;color:#666">L'app suit cette séquence toute seule : chaque fois que tu notes un contact, elle propose l'étape suivante et sa date.</p>
+  <div class="step"><b>Étape 1 — appel (vers 10h pour l'Horeca)</b><span>But : obtenir un rendez-vous de diagnostic. Ne pas vendre au téléphone.</span></div>
+  <div class="step"><b>Étape 2 — email si pas joint (le jour même)</b><span>Court, personnel, qui reprend le besoin observé.</span></div>
+  <div class="step"><b>Étape 3 — LinkedIn ou Facebook (lendemain)</b><span>Si tu trouves le profil : message bref, mentionne l'établissement.</span></div>
+  <div class="step"><b>Étape 4 — passage sur place (2 jours après)</b><span>Hors service. Carte de visite, une phrase, tu repars.</span></div>
+  <div class="step"><b>Étape 5 — rappel téléphonique (environ 4 jours après)</b><span>« On s'était parlé la semaine passée, vous avez eu le temps d'y penser ? »</span></div>
+  <div class="step"><b>Étape 6 — email de suivi (lendemain)</b><span>Doux, sans pression.</span></div>
+  <div class="step"><b>Étape 7 — dernière tentative (3 jours après)</b><span>Puis suivi passif : l'app te le ressort dans un mois.</span></div>
 </div>
 
 <div id="scripts" class="tab">
@@ -132,6 +153,7 @@ Confirmer jour, heure, adresse. Remercier.</div>
   <div class="box"><b>Horaires Horeca.</b> Appeler vers 10h ou 15h-16h. Jamais pendant le service.</div>
   <div class="box"><b>Les preuves vendent.</b> Photos avant/après de tes premiers chantiers, même chez toi ou chez des proches.</div>
   <div class="box"><b>Pas de chiffres non vérifiés.</b> N'annonce un % d'économie que s'il vient de la fiche technique du film que tu poses.</div>
+  <div class="box"><b>Note chaque contact.</b> Même un « pas répondu ». C'est ce qui permet à l'app de te dire qui relancer.</div>
 </div>
 
 <div id="config" class="tab">
@@ -147,7 +169,7 @@ Confirmer jour, heure, adresse. Remercier.</div>
   </div>
   <button class="btn primary" onclick="sauverConfig()">Enregistrer</button><span class="msg" id="c-msg"></span>
   <h2 style="margin-top:2rem">Sauvegarde</h2>
-  <p style="font-size:13px;color:#666">Tes prospects sont stockés dans ce navigateur. Exporte-les de temps en temps.</p>
+  <p style="font-size:13px;color:#666">Tes prospects sont stockés dans ce navigateur. Exporte-les chaque semaine.</p>
   <div class="row">
     <button class="btn" onclick="exporter()">Exporter mes prospects</button>
     <label class="btn" style="margin:0;cursor:pointer">Importer<input type="file" id="imp" accept=".json" style="display:none"></label>
@@ -157,71 +179,175 @@ Confirmer jour, heure, adresse. Remercier.</div>
 
 <script>
 const STATUTS = ["à contacter","contacté","rdv","client","pas intéressé"];
+const FERMES = ["client","pas intéressé"];
+const CANAUX = { appel: "📞 Appel", mail: "✉️ Email", social: "💬 LinkedIn/Facebook", visite: "🚶 Visite" };
+// Séquence : étape suivante après n contacts, et délai en jours avant cette étape
+const SEQUENCE = [
+  { etape: "Appel", delai: 0 },
+  { etape: "Email (si pas joint)", delai: 0 },
+  { etape: "LinkedIn ou Facebook", delai: 1 },
+  { etape: "Passage sur place", delai: 2 },
+  { etape: "Rappel téléphonique", delai: 4 },
+  { etape: "Email de suivi", delai: 1 },
+  { etape: "Dernière tentative", delai: 3 }
+];
+
+function aujourdhui() { const d = new Date(); return iso(d); }
+function iso(d) { return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0"); }
+function plusJours(n) { const d = new Date(); d.setDate(d.getDate() + n); return iso(d); }
+function fr(isoDate) { if (!isoDate) return ""; const [y,m,j] = isoDate.split("-"); return j + "/" + m + "/" + y; }
+
+function lire(cle, defaut) { try { const v = localStorage.getItem(cle); return v ? JSON.parse(v) : defaut; } catch(e) { return defaut; } }
+function ecrire(cle, val) { try { localStorage.setItem(cle, JSON.stringify(val)); } catch(e) {} }
+
 const EXEMPLES = [
   {id:1, exemple:true, nom:"(exemple)", etab:"Brasserie fictive", ville:"Wavre", secteur:"Horeca", tel:"", mail:"", besoin:"Grande vitrine plein sud, salle chaude l'après-midi en été.", notes:"", statut:"à contacter"},
   {id:2, exemple:true, nom:"(exemple)", etab:"Particulier fictif", ville:"Nivelles", secteur:"Particulier", tel:"", mail:"", besoin:"Baie vitrée avec vis-à-vis sur la rue.", notes:"", statut:"à contacter"}
 ];
 
-function lire(cle, defaut) { try { const v = localStorage.getItem(cle); return v ? JSON.parse(v) : defaut; } catch(e) { return defaut; } }
-function ecrire(cle, val) { try { localStorage.setItem(cle, JSON.stringify(val)); } catch(e) {} }
-
 let prospects = lire("pf_prospects", EXEMPLES);
 let config = lire("pf_config", {});
 
-document.querySelectorAll(".tabs button").forEach(b => b.addEventListener("click", () => {
-  document.querySelectorAll(".tabs button").forEach(x => x.classList.remove("active"));
-  document.querySelectorAll(".tab").forEach(x => x.classList.remove("active"));
-  b.classList.add("active");
-  document.getElementById(b.dataset.tab).classList.add("active");
-}));
+// Mise à niveau des anciennes fiches
+prospects.forEach(p => {
+  if (!Array.isArray(p.historique)) p.historique = [];
+  if (p.prochaine === undefined) p.prochaine = FERMES.includes(p.statut) ? "" : aujourdhui();
+});
+sauver();
+
+function sauver() { ecrire("pf_prospects", prospects); }
+
+document.querySelectorAll(".tabs button").forEach(b => b.addEventListener("click", () => ouvrirOnglet(b.dataset.tab)));
+function ouvrirOnglet(tab) {
+  document.querySelectorAll(".tabs button").forEach(x => x.classList.toggle("active", x.dataset.tab === tab));
+  document.querySelectorAll(".tab").forEach(x => x.classList.toggle("active", x.id === tab));
+}
 
 function esc(s) { return String(s || "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
 
 function accroches(p) {
   const lieu = p.etab || "votre établissement";
+  const vu = p.besoin ? p.besoin.charAt(0).toLowerCase() + p.besoin.slice(1).replace(/\.$/, "") : "vos grandes surfaces vitrées";
   return [
-    "Observation : « En passant devant " + lieu + ", j'ai remarqué " + (p.besoin ? p.besoin.charAt(0).toLowerCase() + p.besoin.slice(1).replace(/\.$/, "") : "vos grandes surfaces vitrées") + ". »",
+    "Observation : « En passant devant " + lieu + ", j'ai remarqué " + vu + ". »",
     "Opportunité : « On peut réduire nettement la chaleur derrière une vitre sans perdre la vue ni la lumière. »",
     "Question : « L'été, la chaleur derrière vos vitres, c'est un vrai souci ou ça va ? »"
   ];
 }
 
+function etapeSuivante(p) {
+  const n = p.historique.length;
+  if (n < SEQUENCE.length) return SEQUENCE[n].etape;
+  return "Suivi passif : reprendre contact";
+}
+
+function afficherAujourdhui() {
+  const t = aujourdhui();
+  const items = prospects
+    .filter(p => !FERMES.includes(p.statut) && p.prochaine && p.prochaine <= t)
+    .sort((a, b) => a.prochaine.localeCompare(b.prochaine));
+  const box = document.getElementById("today");
+  if (!items.length) { box.innerHTML = '<p style="font-size:14px;color:#555;margin:0">Rien de prévu aujourd\'hui. Profites-en pour ajouter de nouveaux prospects.</p>'; return; }
+  box.innerHTML = items.map(p => {
+    const retard = p.prochaine < t;
+    return `<div class="today-item" onclick="allerA(${p.id})">
+      <span><b>${esc(etapeSuivante(p))}</b> — ${esc(p.etab)} <small>(${esc(p.ville)})</small></span>
+      <span class="badge ${retard ? "late" : "today"}">${retard ? "en retard depuis le " + fr(p.prochaine) : "aujourd'hui"}</span>
+    </div>`;
+  }).join("");
+}
+
+function allerA(id) {
+  document.getElementById("filtre").value = "tous";
+  afficher();
+  const el = document.getElementById("p-" + id);
+  if (el) { el.scrollIntoView({behavior: "smooth", block: "start"}); el.classList.add("highlight"); setTimeout(() => el.classList.remove("highlight"), 2000); }
+}
+
 function afficher() {
+  afficherAujourdhui();
   const f = document.getElementById("filtre").value;
   const liste = document.getElementById("liste");
   const items = prospects.filter(p => f === "tous" || p.statut === f);
   if (!items.length) { liste.innerHTML = '<p style="color:#888">Aucun prospect pour ce filtre.</p>'; return; }
-  liste.innerHTML = items.map(p => `
-    <div class="card">
-      <h3>${esc(p.etab)} ${p.exemple ? '<span class="badge">exemple</span>' : ''}</h3>
+  const t = aujourdhui();
+  liste.innerHTML = items.map(p => {
+    const ferme = FERMES.includes(p.statut);
+    const histo = p.historique.slice().reverse().map(h =>
+      `<li>${fr(h.date)} · ${esc(CANAUX[h.canal] || h.canal)}${h.resultat ? " — " + esc(h.resultat) : ""}</li>`).join("");
+    return `
+    <div class="card" id="p-${p.id}">
+      <h3>${esc(p.etab)} ${p.exemple ? '<span class="badge">exemple</span>' : ''}
+        ${!ferme && p.prochaine && p.prochaine < t ? '<span class="badge late">relance en retard</span>' : ''}</h3>
       <div class="meta">${esc(p.nom)} · ${esc(p.ville)} · ${esc(p.secteur)}${p.tel ? " · " + esc(p.tel) : ""}${p.mail ? " · " + esc(p.mail) : ""}</div>
       ${p.besoin ? `<div class="box"><b>Besoin observé :</b> ${esc(p.besoin)}</div>` : ""}
       ${accroches(p).map(a => `<div class="hook">${esc(a)}</div>`).join("")}
       ${p.notes ? `<div class="box"><b>Notes :</b> ${esc(p.notes)}</div>` : ""}
-      <div class="row">
+
+      ${ferme ? "" : `
+      <div class="next">
+        <b>Prochaine étape :</b> ${esc(etapeSuivante(p))}
+        <div class="row" style="margin-top:6px">
+          <span style="font-size:13px">le</span>
+          <input type="date" class="date-in" value="${p.prochaine || ""}" onchange="changerDate(${p.id}, this.value)">
+        </div>
+      </div>
+      <div style="font-size:12px;color:#666;margin-bottom:4px">Noter un contact :</div>
+      <div class="row canaux">
+        ${Object.keys(CANAUX).map(c => `<button class="btn" onclick="noterContact(${p.id}, '${c}')">${CANAUX[c]}</button>`).join("")}
+      </div>`}
+
+      ${histo ? `<ul class="histo"><li style="border-top:none;font-weight:500;color:#333">Historique (${p.historique.length} contact${p.historique.length > 1 ? "s" : ""})</li>${histo}</ul>` : ""}
+
+      <div class="row" style="margin-top:12px">
         <select onchange="changerStatut(${p.id}, this.value)" style="max-width:180px">
           ${STATUTS.map(s => `<option ${s === p.statut ? "selected" : ""}>${s}</option>`).join("")}
         </select>
         <button class="btn" onclick="noter(${p.id})">Ajouter une note</button>
         <button class="btn" onclick="supprimer(${p.id})">Supprimer</button>
       </div>
-    </div>`).join("");
+    </div>`;
+  }).join("");
 }
 
-function changerStatut(id, s) { const p = prospects.find(x => x.id === id); p.statut = s; ecrire("pf_prospects", prospects); afficher(); }
-function noter(id) {
-  const p = prospects.find(x => x.id === id);
-  const n = prompt("Note (date, ce qui s'est dit) :");
-  if (n) { const d = new Date().toLocaleDateString("fr-BE"); p.notes = (p.notes ? p.notes + " | " : "") + d + " : " + n; ecrire("pf_prospects", prospects); afficher(); }
+function trouver(id) { return prospects.find(x => x.id === id); }
+
+function noterContact(id, canal) {
+  const p = trouver(id);
+  const r = prompt(CANAUX[canal] + " — résultat ? (ex. : pas répondu, rappeler jeudi, RDV mardi 10h…)");
+  if (r === null) return;
+  p.historique.push({ date: aujourdhui(), canal: canal, resultat: r.trim() });
+  if (p.statut === "à contacter") p.statut = "contacté";
+  const n = p.historique.length;
+  p.prochaine = n < SEQUENCE.length ? plusJours(SEQUENCE[n].delai) : plusJours(30);
+  sauver(); afficher();
+  setTimeout(() => allerA(id), 50);
 }
-function supprimer(id) { if (confirm("Supprimer ce prospect ?")) { prospects = prospects.filter(x => x.id !== id); ecrire("pf_prospects", prospects); afficher(); } }
+
+function changerDate(id, v) { trouver(id).prochaine = v; sauver(); afficherAujourdhui(); }
+
+function changerStatut(id, s) {
+  const p = trouver(id);
+  p.statut = s;
+  if (FERMES.includes(s)) p.prochaine = "";
+  else if (!p.prochaine) p.prochaine = aujourdhui();
+  sauver(); afficher();
+}
+
+function noter(id) {
+  const p = trouver(id);
+  const n = prompt("Note :");
+  if (n) { p.notes = (p.notes ? p.notes + " | " : "") + fr(aujourdhui()) + " : " + n; sauver(); afficher(); }
+}
+
+function supprimer(id) { if (confirm("Supprimer ce prospect ?")) { prospects = prospects.filter(x => x.id !== id); sauver(); afficher(); } }
 
 function ajouter() {
   const v = id => document.getElementById(id).value.trim();
   if (!v("f-etab")) { document.getElementById("f-err").textContent = "Indique au moins le nom de l'établissement."; return; }
   document.getElementById("f-err").textContent = "";
-  prospects.push({ id: Date.now(), nom: v("f-nom"), etab: v("f-etab"), ville: v("f-ville"), secteur: v("f-secteur"), tel: v("f-tel"), mail: v("f-mail"), besoin: v("f-besoin"), notes: v("f-notes"), statut: "à contacter" });
-  ecrire("pf_prospects", prospects);
+  prospects.push({ id: Date.now(), nom: v("f-nom"), etab: v("f-etab"), ville: v("f-ville"), secteur: v("f-secteur"), tel: v("f-tel"), mail: v("f-mail"), besoin: v("f-besoin"), notes: v("f-notes"), statut: "à contacter", historique: [], prochaine: aujourdhui() });
+  sauver();
   ["f-nom","f-etab","f-ville","f-tel","f-mail","f-besoin","f-notes"].forEach(i => document.getElementById(i).value = "");
   document.getElementById("f-msg").textContent = "Prospect ajouté";
   setTimeout(() => document.getElementById("f-msg").textContent = "", 2500);
@@ -239,14 +365,24 @@ function exporter() {
   const blob = new Blob([JSON.stringify({prospects, config}, null, 2)], {type: "application/json"});
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
-  a.download = "prospector-films-sauvegarde.json";
+  a.download = "prospector-films-sauvegarde-" + aujourdhui() + ".json";
   a.click();
 }
 
 document.getElementById("imp").addEventListener("change", e => {
   const file = e.target.files[0]; if (!file) return;
   const r = new FileReader();
-  r.onload = () => { try { const d = JSON.parse(r.result); if (d.prospects) prospects = d.prospects; if (d.config) config = d.config; ecrire("pf_prospects", prospects); ecrire("pf_config", config); chargerConfig(); afficher(); alert("Import terminé"); } catch(err) { alert("Fichier illisible"); } };
+  r.onload = () => {
+    try {
+      const d = JSON.parse(r.result);
+      if (d.prospects) {
+        prospects = d.prospects;
+        prospects.forEach(p => { if (!Array.isArray(p.historique)) p.historique = []; if (p.prochaine === undefined) p.prochaine = FERMES.includes(p.statut) ? "" : aujourdhui(); if (!p.id) p.id = Date.now() + Math.random(); });
+      }
+      if (d.config) config = d.config;
+      sauver(); ecrire("pf_config", config); chargerConfig(); afficher(); alert("Import terminé");
+    } catch(err) { alert("Fichier illisible"); }
+  };
   r.readAsText(file);
 });
 
